@@ -86,7 +86,7 @@ class BaseModel(nn.Module):
                     nn.init.zeros_(m.bias)
 
 
-    def forward(self, x):
+    def forward(self, x, data=None):
         y = dict()
         if self.use_transform:
             x = self.transform(x)
@@ -105,9 +105,12 @@ class BaseModel(nn.Module):
                 y["neck_out"] = x
             final_name = "neck_out"
         if self.use_head:
-            x = self.head(x)
+            if data is None:
+                x = self.head(x)
+            else:
+                x = self.head(x, data=data)
         # for multi head, save ctc neck out for udml
-        if isinstance(x, dict) and 'ctc_nect' in x.keys():
+        if isinstance(x, dict) and 'ctc_neck' in x.keys():
             y['neck_out'] = x['ctc_neck']
             y['head_out'] = x
         elif isinstance(x, dict):
